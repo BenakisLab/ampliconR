@@ -29,3 +29,66 @@ calc_pal <- function(ps, group_variable) {
   }
   return(pal)
 }
+
+#' Get top N most abundant taxa
+#'
+#' @param ps A phyloseq object
+#' @param n Number of top taxa to return
+#' @param tax_level Taxonomic level (default: "species")
+#' @param agg Aggregate at taxonomic level first (default: FALSE)
+#' @return Character vector of top taxa names
+#' @export
+get_top_n <- function(ps, n, tax_level = "species", agg = FALSE) {
+  if (tax_level != "species" && agg == TRUE) {
+    ps <- ps %>%
+      microViz::tax_fix() %>%
+      microViz::tax_agg(rank = tax_level)
+    ps <- microViz::ps_get(ps)
+  }
+
+  topn <- ps %>%
+    transform(transform = "relative") %>%
+    phyloseq::psmelt() %>%
+    dplyr::group_by(OTU) %>%
+    dplyr::summarise(Mean_abund = mean(Abundance)) %>%
+    dplyr::filter(Mean_abund > 0) %>%
+    dplyr::slice_max(Mean_abund, n = n) %>%
+    dplyr::pull(OTU)
+
+  return(topn)
+}
+
+#' Get top N most abundant taxa per group
+#'
+#' @param ps A phyloseq object
+#' @param n Number of top taxa to return
+#' @param tax_level Taxonomic level (default: "species")
+#' @param var Grouping variable
+#' @param group Specific group value to filter
+#' @param agg Aggregate at taxonomic level first (default: FALSE)
+#' @return Character vector of top taxa names
+#' @export
+get_top_n_group <- function(ps, n, tax_level = "species", var, group = NULL, agg = FALSE) {
+  if (tax_level != "species" && agg != TRUE) {
+    warning("Aggregation not set to TRUE, ensure data are aggregated at desired taxonomic level prior to running this function")
+  }
+
+  if (tax_level != "species" && agg == TRUE) {
+    ps <- ps %>%
+      microViz::tax_fix(unknowns = "Unknown") %>%
+      microViz::tax_agg(rank = tax_level)
+    ps <- microViz::ps_get(ps)
+  }
+
+  topn <- ps %>%
+    transform(transform = "relative") %>%
+    phyloseq::psmelt() %>%
+    dplyr::filter({{ var }} == {{ group }}) %>%
+    dplyr::group_by(OTU) %>%
+    dplyr::summarise(Mean_abund = mean(Abundance)) %>%
+    dplyr::filter(Mean_abund > 0) %>%
+    dplyr::slice_max(Mean_abund, n = n) %>%
+    dplyr::pull(OTU)
+
+  return(topn)
+}

@@ -12,7 +12,7 @@
 #' @param p_title Plot title
 #' @param multiple_groups Use Kruskal-Wallis for multiple groups (default: FALSE)
 #' @param cols Custom color palette
-#' @param group.order Order of groups on x-axis
+#' @param group_order Order of groups on x-axis
 #' @param paired Use paired tests (default: FALSE)
 #' @param ... Additional arguments passed to stat_pvalue_manual()
 #' @return A ggplot object
@@ -27,7 +27,7 @@ plot_boxplot <- function(df,
                          p_title = NULL,
                          multiple_groups = FALSE,
                          cols = NULL,
-                         group.order = NULL,
+                         group_order = NULL,
                          paired = FALSE,
                          ...) {
   if (is.null(cols)) {
@@ -35,8 +35,8 @@ plot_boxplot <- function(df,
   }
   cols <- c(cols, "transparent")
 
-  if (!is.null(group.order)) {
-    df[, variable_col] <- factor(df[, variable_col], levels = group.order)
+  if (!is.null(group_order)) {
+    df[, variable_col] <- factor(df[, variable_col], levels = group_order)
   }
 
   formula <- xyform(value_col, variable_col)
@@ -57,11 +57,9 @@ plot_boxplot <- function(df,
     } else {
       stat_variance <- df %>% rstatix::kruskal_test(formula)
       stat_test <- df %>%
-        rstatix::pairwise_wilcox_test(
-          formula,
-          comparisons = comparisons_list,
-          p.adjust.method = "BH"
-        ) %>%
+        rstatix::pairwise_wilcox_test(formula,
+                                      comparisons = comparisons_list,
+                                      p.adjust.method = "BH") %>%
         rstatix::add_significance() %>%
         rstatix::add_xy_position(x = variable_col) %>%
         dplyr::filter(p.adj < 0.05)
@@ -97,9 +95,12 @@ plot_boxplot <- function(df,
       outlier.shape = 5,
       outlier.size = 1
     ) +
-    ggplot2::geom_point(size = 1.5, position = ggplot2::position_jitterdodge()) +
+    ggplot2::geom_point(size = 1.5,
+                        position = ggplot2::position_jitterdodge()) +
     ggplot2::labs(x = xlab, y = ylab) +
-    ggplot2::stat_boxplot(color = "black", geom = "errorbar", width = 0.2)
+    ggplot2::stat_boxplot(color = "black",
+                          geom = "errorbar",
+                          width = 0.2)
 
   final_plot <- plot +
     ggpubr::theme_classic2() +
@@ -154,7 +155,8 @@ plot_boxplot <- function(df,
           inherit.aes = FALSE,
           ...
         ) +
-        ggplot2::scale_y_continuous(breaks = seq(0, ybreakmax, by = ybreak), limits = c(0, ylimit)) +
+        ggplot2::scale_y_continuous(breaks = seq(0, ybreakmax, by = ybreak),
+                                    limits = c(0, ylimit)) +
         lemon::coord_capped_cart(left = "top", expand = FALSE)
     } else {
       plot_out <- final_plot +
@@ -165,7 +167,8 @@ plot_boxplot <- function(df,
           inherit.aes = FALSE,
           ...
         ) +
-        ggplot2::scale_y_continuous(breaks = seq(0, ybreakmax, by = ybreak), limits = c(0, ylimit)) +
+        ggplot2::scale_y_continuous(breaks = seq(0, ybreakmax, by = ybreak),
+                                    limits = c(0, ylimit)) +
         lemon::coord_capped_cart(left = "top", expand = FALSE)
     }
   }
@@ -183,7 +186,7 @@ plot_boxplot <- function(df,
 #' @param fill_color Confidence interval fill color
 #' @param xlab X-axis label
 #' @param ylab Y-axis label
-#' @param corr.method Correlation method (NULL for no correlation annotation)
+#' @param corr_method Correlation method (NULL for no correlation annotation)
 #' @param ... Additional arguments passed to stat_cor()
 #' @return A ggplot object
 #' @export
@@ -195,11 +198,14 @@ plot_scatter <- function(df,
                          fill_color,
                          xlab,
                          ylab,
-                         corr.method = NULL,
+                         corr_method = NULL,
                          ...) {
-  p <- ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = .data[[x]], y = .data[[y]])) +
+  p <- ggplot2::ggplot(data = df,
+                       mapping = ggplot2::aes(x = .data[[x]], y = .data[[y]])) +
     ggplot2::geom_point(ggplot2::aes(color = point_color), size = 2.5) +
-    ggplot2::geom_smooth(method = "lm", color = line_color, fill = fill_color) +
+    ggplot2::geom_smooth(method = "lm",
+                         color = line_color,
+                         fill = fill_color) +
     ggplot2::theme_bw() +
     ggplot2::theme(
       legend.position = "None",
@@ -211,8 +217,8 @@ plot_scatter <- function(df,
     ggplot2::xlab(xlab) +
     ggplot2::ylab(ylab)
 
-  if (!is.null(corr.method)) {
-    p <- p + ggpubr::stat_cor(method = corr.method, ...)
+  if (!is.null(corr_method)) {
+    p <- p + ggpubr::stat_cor(method = corr_method, ...)
     return(p)
   } else {
     return(p)
@@ -300,10 +306,8 @@ plot_da <- function(ancom_res, groups, cols = NULL) {
     ggplot2::aes(x = Highest_classified, y = Log2FC, color = enriched_in)
   ) +
     ggplot2::geom_point(size = 5) +
-    ggplot2::labs(
-      y = paste("\nLog2 Fold-Change", groups[1], "vs", groups[2], sep = " "),
-      x = ""
-    ) +
+    ggplot2::labs(y = paste("\nLog2 Fold-Change", groups[1], "vs", groups[2], sep = " "),
+                  x = "") +
     ggplot2::theme_bw() +
     ggplot2::theme(
       axis.text.x = ggplot2::element_text(color = "black", size = 14),
@@ -321,68 +325,6 @@ plot_da <- function(ancom_res, groups, cols = NULL) {
   print(p)
 }
 
-#' Get top N most abundant taxa
-#'
-#' @param ps A phyloseq object
-#' @param n Number of top taxa to return
-#' @param level Taxonomic level (default: "species")
-#' @param agg Aggregate at taxonomic level first (default: FALSE)
-#' @return Character vector of top taxa names
-#' @export
-get_top_n <- function(ps, n, level = "species", agg = FALSE) {
-  if (level != "species" && agg == TRUE) {
-    ps <- ps %>%
-      microViz::tax_fix() %>%
-      microViz::tax_agg(rank = level)
-    ps <- microViz::ps_get(ps)
-  }
-
-  topn <- ps %>%
-    transform(transform = "relative") %>%
-    phyloseq::psmelt() %>%
-    dplyr::group_by(OTU) %>%
-    dplyr::summarise(Mean_abund = mean(Abundance)) %>%
-    dplyr::filter(Mean_abund > 0) %>%
-    dplyr::slice_max(Mean_abund, n = n) %>%
-    dplyr::pull(OTU)
-
-  return(topn)
-}
-
-#' Get top N most abundant taxa per group
-#'
-#' @param ps A phyloseq object
-#' @param n Number of top taxa to return
-#' @param level Taxonomic level (default: "species")
-#' @param var Grouping variable
-#' @param group Specific group value to filter
-#' @param agg Aggregate at taxonomic level first (default: FALSE)
-#' @return Character vector of top taxa names
-#' @export
-get_top_n_group <- function(ps, n, level = "species", var, group = NULL, agg = FALSE) {
-  if (level != "species" && agg != TRUE) {
-    warning("Aggregation not set to TRUE, ensure data are aggregated at desired taxonomic level prior to running this function")
-  }
-
-  if (level != "species" && agg == TRUE) {
-    ps <- ps %>%
-      microViz::tax_fix(unknowns = "Unknown") %>%
-      microViz::tax_agg(rank = level)
-    ps <- microViz::ps_get(ps)
-  }
-
-  topn <- ps %>%
-    transform(transform = "relative") %>%
-    phyloseq::psmelt() %>%
-    dplyr::filter({{ var }} == {{ group }}) %>%
-    dplyr::group_by(OTU) %>%
-    dplyr::summarise(Mean_abund = mean(Abundance)) %>%
-    dplyr::filter(Mean_abund > 0) %>%
-    dplyr::slice_max(Mean_abund, n = n) %>%
-    dplyr::pull(OTU)
-
-  return(topn)
-}
 
 #' Plot taxonomic composition
 #'
@@ -398,8 +340,14 @@ get_top_n_group <- function(ps, n, level = "species", var, group = NULL, agg = F
 #' @param agg Aggregate at taxonomic level (default: FALSE)
 #' @return A ggplot object
 #' @export
-plot_taxonomic_comp <- function(ps, tax_level, var, ord = NULL, n_taxa = 10,
-                                per_group = FALSE, groups = NULL, agg = FALSE) {
+plot_taxonomic_comp <- function(ps,
+                                tax_level,
+                                var,
+                                ord = NULL,
+                                n_taxa = 10,
+                                per_group = FALSE,
+                                groups = NULL,
+                                agg = FALSE) {
   ranks <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus")
 
   if (!tax_level %in% ranks) {
@@ -408,14 +356,19 @@ plot_taxonomic_comp <- function(ps, tax_level, var, ord = NULL, n_taxa = 10,
 
   var <- rlang::enquo(var)
 
- if (per_group == TRUE) {
+  if (per_group == TRUE) {
     if (is.null(groups)) {
       groups <- unique(meta_to_df(ps) %>% dplyr::pull(.data[[var]]))
     }
     top_tax <- purrr::map(groups, function(x) {
       ps %>%
-        get_top_n_group(n = n_taxa, level = tax_level,
-                        var = .data[[var]], group = x, agg = agg)
+        get_top_n_group(
+          n = n_taxa,
+          level = tax_level,
+          var = .data[[var]],
+          group = x,
+          agg = agg
+        )
     })
     top_tax <- c(unique(unlist(top_tax)), "other")
     n_taxa <- length(top_tax)
@@ -463,7 +416,8 @@ plot_taxonomic_comp <- function(ps, tax_level, var, ord = NULL, n_taxa = 10,
     ggplot2::geom_bar(position = "fill", stat = "identity") +
     ggplot2::scale_fill_manual(values = taxa_pal) +
     ggplot2::facet_grid(stats::as.formula(paste("~", var)),
-                        scales = "free", space = "free") +
+                        scales = "free",
+                        space = "free") +
     cowplot::theme_cowplot() +
     ggplot2::scale_y_continuous(labels = scales::percent, expand = c(0, 0)) +
     ggplot2::theme(
