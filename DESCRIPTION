@@ -1,0 +1,46 @@
+Package: ampliconR
+Title: Analysis of 16S rRNA Sequencing Data
+Version: 0.0.0.9000
+Authors@R:
+    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
+Description: R package for analysis of 16S rRNA sequencing data, based on
+    scripts from Sorbie, Delgado Jimenez and Benakis (2022) and Sorbie,
+    Delgado Jimenez, Weiler and Benakis (2023). Provides functions for data
+    import, normalization, alpha and beta diversity analysis, differential
+    abundance testing, and visualization.
+License: GPL (>= 2)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Depends:
+    R (>= 4.0.0)
+Imports:
+    phyloseq,
+    vegan,
+    ANCOMBC,
+    GUniFrac,
+    phangorn,
+    picante,
+    mixOmics,
+    dplyr,
+    tidyr,
+    tibble,
+    rlang,
+    purrr,
+    ggplot2,
+    ggpubr,
+    ggsci,
+    rstatix,
+    lemon,
+    cowplot,
+    scales,
+    zoo,
+    methods,
+    stats,
+    grDevices,
+    utils
+Suggests:
+    microViz,
+    testthat (>= 3.0.0),
+    ape
+Config/testthat/edition: 3
