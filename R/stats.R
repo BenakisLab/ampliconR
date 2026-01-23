@@ -14,8 +14,7 @@ phyloseq_adonis <- function(ps, dist_matrix, group_variable, ...) {
     message("metadata contains NAs, remove these samples with subset_samples before continuing")
     return(NULL)
   } else {
-    dist_str <- deparse(substitute(dist_matrix))
-    form <- as.formula(paste(dist_str, group_variable, sep = "~"))
+    form <- as.formula(paste("dist_matrix", group_variable, sep = " ~ "))
     ps_ad <- vegan::adonis2(form, data = meta_df, ...)
     return(ps_ad)
   }

@@ -27,9 +27,26 @@ test_that("calc_pal() handles multiple groups", {
 test_that("calc_pal() warns for >9 groups", {
   # Create phyloseq with many groups
   ps <- create_mock_phyloseq()
-  # Add more unique timepoints
-  phyloseq::sample_data(ps)$ManyGroups <- paste0("G", 1:6)
+  # Add 10 unique groups to trigger the warning
+  phyloseq::sample_data(ps)$ManyGroups <- paste0("G", c(1:6, 7:10)[1:6])
 
-  # Duplicate samples to get more groups
-  expect_message(pal <- calc_pal(ps, "ManyGroups"))
+  # Need to add more samples to have 10 groups
+  # Create a larger mock phyloseq with 10 samples
+  set.seed(42)
+  otu_mat <- matrix(
+    sample(0:100, 50, replace = TRUE),
+    nrow = 5, ncol = 10,
+    dimnames = list(paste0("ASV", 1:5), paste0("Sample", 1:10))
+  )
+  otu <- phyloseq::otu_table(otu_mat, taxa_are_rows = TRUE)
+
+  sample_df <- data.frame(
+    ManyGroups = paste0("G", 1:10),
+    row.names = paste0("Sample", 1:10)
+  )
+  samp <- phyloseq::sample_data(sample_df)
+
+  ps_large <- phyloseq::phyloseq(otu, samp)
+
+  expect_message(pal <- calc_pal(ps_large, "ManyGroups"))
 })

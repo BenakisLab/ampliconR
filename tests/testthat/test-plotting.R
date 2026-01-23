@@ -109,8 +109,9 @@ test_that("plot_da() creates lollipop plot", {
     qval = c(0.01, 0.02, 0.001)
   )
 
-  # Capture the plot (plot_da uses print())
-  expect_output(plot_da(ancom_res, groups = c("Control", "Treatment")))
+  # Capture the plot (plot_da uses print() and returns ggplot invisibly)
+  p <- plot_da(ancom_res, groups = c("Control", "Treatment"))
+  expect_s3_class(p, "ggplot")
 })
 
 test_that("plot_taxonomic_comp() returns ggplot", {

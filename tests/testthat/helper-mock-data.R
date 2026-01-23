@@ -45,9 +45,8 @@ create_mock_phyloseq <- function(with_tree = FALSE) {
   samp <- sample_data(sample_df)
 
   if (with_tree) {
-    # Create a simple random tree
-    library(ape)
-    tree <- rtree(5, tip.label = paste0("ASV", 1:5))
+    # Create a simple random tree with meaningful branch lengths
+    tree <- ape::rtree(5, tip.label = paste0("ASV", 1:5), br = stats::runif)
     ps <- phyloseq(otu, tax, samp, tree)
   } else {
     ps <- phyloseq(otu, tax, samp)

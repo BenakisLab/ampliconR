@@ -198,7 +198,7 @@ plot_scatter <- function(df,
                          fill_color,
                          xlab,
                          ylab,
-                         corr_method = NULL,
+                         corr.method = NULL,
                          ...) {
   p <- ggplot2::ggplot(data = df,
                        mapping = ggplot2::aes(x = .data[[x]], y = .data[[y]])) +
@@ -217,8 +217,8 @@ plot_scatter <- function(df,
     ggplot2::xlab(xlab) +
     ggplot2::ylab(ylab)
 
-  if (!is.null(corr_method)) {
-    p <- p + ggpubr::stat_cor(method = corr_method, ...)
+  if (!is.null(corr.method)) {
+    p <- p + ggpubr::stat_cor(method = corr.method, ...)
     return(p)
   } else {
     return(p)
@@ -323,6 +323,7 @@ plot_da <- function(ancom_res, groups, cols = NULL) {
     ggplot2::scale_color_manual(values = cols)
 
   print(p)
+  return(invisible(p))
 }
 
 

@@ -54,10 +54,11 @@ test_that("calc_betadiv() works with UniFrac when tree present", {
 
   ps <- create_mock_phyloseq(with_tree = TRUE)
 
-  result_unifrac <- calc_betadiv(ps, dist = "unifrac")
+  # Use PCoA instead of NMDS for UniFrac (NMDS can fail with small mock datasets)
+  result_unifrac <- calc_betadiv(ps, dist = "unifrac", ord_method = "PCoA")
   expect_s3_class(result_unifrac$Distance_Matrix, "dist")
 
-  result_wunifrac <- calc_betadiv(ps, dist = "wunifrac")
+  result_wunifrac <- calc_betadiv(ps, dist = "wunifrac", ord_method = "PCoA")
   expect_s3_class(result_wunifrac$Distance_Matrix, "dist")
 })
 
