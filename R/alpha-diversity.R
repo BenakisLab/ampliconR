@@ -42,23 +42,28 @@ Richness <- function(x, detection = 0.5) {
 #' @export
 calc_alpha <- function(ps, ...) {
   mat_in <- ps_to_asvtab(ps) %>% t()
-
-  diversity <- setNames(
+  # get metadata
+  meta <- meta_to_df(ps)
+  # create empty df for results
+  alpha_diversity <- setNames(
     data.frame(matrix(ncol = 3, nrow = phyloseq::nsamples(ps))),
     c("Richness", "Shannon.Effective", "Faiths.PD")
   )
-  rownames(diversity) <- rownames(meta_to_df(ps))
+  rownames(alpha_diversity) <- rownames(meta_to_df(ps))
 
-  diversity$Richness <- apply(mat_in, 1, Richness, ...)
-  diversity$Shannon.Effective <- apply(mat_in, 1, Shannon.E)
+  alpha_diversity$Richness <- apply(mat_in, 1, Richness, ...)
+  alpha_diversity$Shannon.Effective <- apply(mat_in, 1, Shannon.E)
 
   if (is.null(ps@phy_tree)) {
     warning("Phylogenetic tree is required for Faith's PD calculation, returning NA for this metric")
-    diversity$Faiths.PD <- NA
+    alpha_diversity$Faiths.PD <- NA
   } else {
     tree <- phyloseq::phy_tree(ps)
-    diversity$Faiths.PD <- Faiths(mat_in, tree)
+    alpha_diversity$Faiths.PD <- Faiths(mat_in, tree)
   }
+  # bind results with metadata
+  alpha_diversity_out <- merge(meta, alpha_diversity, by = 0) %>%
+    column_to_rownames("Row.names")
+  return(alpha_diversity_out)
 
-  return(diversity)
 }
